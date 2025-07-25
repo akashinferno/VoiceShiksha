@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Practice Mode</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    .card {
+      font-size: 80px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 12px 25px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="hindiSymbol">अ</div>
+
+  <button id="recordBtn">🎙 Start Recording</button>
+  <button id="stopBtn" disabled>🛑 Stop</button>
+  <button id="nextBtn">➡️ Next</button>
+
+  <div id="status"></div>
+
+  <script>
+    const hindiSymbols = ["अ", "आ", "इ", "ई", "उ", "ऊ", "ए", "ऐ", "ओ", "औ"];
+    const englishLabels = ["A", "Aaa", "E", "Ee", "U", "Uu", "Ea", "Eaa", "O", "Oo"];
+
+    let currentIndex = 0;
+    let mediaRecorder, audioChunks = [];
+
+    const symbolDisplay = document.getElementById("hindiSymbol");
+    const recordBtn = document.getElementById("recordBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const statusDiv = document.getElementById("status");
+
+    function updateCard() {
+      symbolDisplay.textContent = hindiSymbols[currentIndex];
+    }
+
+    async function sendAudio(blob) {
+      const formData = new FormData();
+      formData.append("audio", blob, "recording.wav");
+      formData.append("target", englishLabels[currentIndex]);
+
+      statusDiv.textContent = "⏳ Analyzing...";
+
+      const res = await fetch("/analyze_pronunciation", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        statusDiv.innerHTML = `✅ ${data.feedback.level}: ${data.feedback.overall}`;
+      } else {
+        statusDiv.textContent = "❌ Analysis failed.";
+      }
+    }
+
+    recordBtn.onclick = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+        await sendAudio(audioBlob);
+      };
+
+      mediaRecorder.start();
+      statusDiv.textContent = "🎙 Recording...";
+      recordBtn.disabled = true;
+      stopBtn.disabled = false;
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      recordBtn.disabled = false;
+      stopBtn.disabled = true;
+      statusDiv.textContent = "📤 Uploading...";
+    };
+
+    nextBtn.onclick = () => {
+      currentIndex++;
+      if (currentIndex >= hindiSymbols.length) {
+        statusDiv.textContent = "🎉 Practice complete!";
+        currentIndex = 0;
+      }
+      updateCard();
+      statusDiv.textContent = "";
+    };
+
+    updateCard();
+  </script>
+</body>
+</html>
