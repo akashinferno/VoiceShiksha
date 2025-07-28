@@ -1,1 +1,13 @@
-Flask
+flask
+pydub
+librosa
+crepe
+numpy
+pandas
+matplotlib
+fastdtw
+scipy
+scikit-learn
+sounddevice
+whisper
+python-Levenshtein

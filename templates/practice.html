@@ -2,42 +2,452 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Practice Mode</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Practice - Voice Shiksha</title>
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      margin-top: 50px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .card {
-      font-size: 80px;
+
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated background elements */
+    .floating-shapes {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .shape {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      animation: float 8s ease-in-out infinite;
+    }
+
+    .shape:nth-child(1) {
+      width: 60px;
+      height: 60px;
+      top: 15%;
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    .shape:nth-child(2) {
+      width: 80px;
+      height: 80px;
+      top: 25%;
+      right: 15%;
+      animation-delay: 3s;
+    }
+
+    .shape:nth-child(3) {
+      width: 50px;
+      height: 50px;
+      bottom: 25%;
+      left: 20%;
+      animation-delay: 6s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-30px) rotate(180deg); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 30px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      animation: slideInUp 0.8s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header {
+      margin-bottom: 30px;
+    }
+
+    .title {
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e0e7ff;
+      border-radius: 10px;
+      overflow: hidden;
       margin-bottom: 20px;
     }
-    button {
-      padding: 12px 25px;
-      font-size: 16px;
-      margin: 10px;
-      cursor: pointer;
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      width: 10%;
+      transition: width 0.5s ease;
+      border-radius: 10px;
     }
-    #status {
-      margin-top: 20px;
+
+    .card-container {
+      position: relative;
+      margin: 30px 0;
+    }
+
+    .card {
+      font-size: clamp(4rem, 15vw, 8rem);
+      background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+      color: white;
+      border-radius: 25px;
+      padding: 40px;
+      margin-bottom: 20px;
+      box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3);
+      animation: cardPulse 2s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+      transform: rotate(45deg);
+      animation: shimmer 3s linear infinite;
+    }
+
+    @keyframes cardPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    .pronunciation-hint {
+      font-size: clamp(1rem, 4vw, 1.3rem);
+      color: #666;
+      margin-bottom: 20px;
+      font-style: italic;
+      animation: fadeIn 1s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin: 30px 0;
+    }
+
+    .btn {
+      padding: 15px 25px;
+      font-size: clamp(1rem, 4vw, 1.2rem);
+      font-family: inherit;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      position: relative;
+      overflow: hidden;
+      min-width: 140px;
       font-weight: bold;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn:active {
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .record-btn {
+      background: linear-gradient(135deg, #4ecdc4, #44a08d);
+      color: white;
+    }
+
+    .record-btn.recording {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+      animation: recordingPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes recordingPulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7); }
+      70% { box-shadow: 0 0 0 20px rgba(255, 107, 107, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+    }
+
+    .stop-btn {
+      background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+      color: #2d3436;
+    }
+
+    .next-btn {
+      background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+      color: white;
+    }
+
+    .status {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 15px;
+      font-size: clamp(1rem, 4vw, 1.2rem);
+      font-weight: bold;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .status.analyzing {
+      background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+      color: #2d3436;
+      animation: analyzing 1.5s ease-in-out infinite;
+    }
+
+    @keyframes analyzing {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .status.success {
+      background: linear-gradient(135deg, #00b894, #00a085);
+      color: white;
+      animation: success 0.5s ease-out;
+    }
+
+    @keyframes success {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .status.error {
+      background: linear-gradient(135deg, #e17055, #d63031);
+      color: white;
+    }
+
+    .status.recording {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+      color: white;
+      animation: recordingStatus 1s ease-in-out infinite;
+    }
+
+    @keyframes recordingStatus {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .complete-celebration {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .celebration-content {
+      background: white;
+      padding: 40px;
+      border-radius: 30px;
+      text-align: center;
+      animation: celebrationPop 0.6s ease-out;
+    }
+
+    @keyframes celebrationPop {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .back-btn:hover {
+      transform: scale(1.1);
+      background: white;
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+      .container {
+        padding: 30px 20px;
+        margin: 10px;
+      }
+      
+      .controls {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .btn {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 25px 15px;
+      }
+      
+      .card {
+        padding: 30px 20px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
 
-  <div class="card" id="hindiSymbol">अ</div>
+  <button class="back-btn" onclick="window.history.back()">🏠</button>
 
-  <button id="recordBtn">🎙 Start Recording</button>
-  <button id="stopBtn" disabled>🛑 Stop</button>
-  <button id="nextBtn">➡️ Next</button>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">🎤 Voice Practice</h1>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="pronunciation-hint" id="pronunciationHint">Say "A" clearly into your phone</div>
+    </div>
 
-  <div id="status"></div>
+    <div class="card-container">
+      <div class="card" id="hindiSymbol">अ</div>
+    </div>
+
+    <div class="controls">
+      <button class="btn record-btn" id="recordBtn">
+        🎙️ Start Recording
+      </button>
+      <button class="btn stop-btn" id="stopBtn" disabled>
+        🛑 Stop Recording
+      </button>
+      <button class="btn next-btn" id="nextBtn">
+        ➡️ Next Letter
+      </button>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="complete-celebration" id="celebration">
+    <div class="celebration-content">
+      <div style="font-size: 4rem; margin-bottom: 20px;">🎉</div>
+      <h2 style="color: #667eea; margin-bottom: 10px;">Congratulations!</h2>
+      <p style="color: #666;">You've completed all the letters!</p>
+      <button class="btn next-btn" onclick="restartPractice()" style="margin-top: 20px;">
+        🔄 Practice Again
+      </button>
+    </div>
+  </div>
 
   <script>
     const hindiSymbols = ["अ", "आ", "इ", "ई", "उ", "ऊ", "ए", "ऐ", "ओ", "औ"];
     const englishLabels = ["A", "Aaa", "E", "Ee", "U", "Uu", "Ea", "Eaa", "O", "Oo"];
+    const pronunciationHints = [
+      'Say "A" like in "Apple"',
+      'Say "Aaa" with a long sound',
+      'Say "E" like in "Elephant"',
+      'Say "Ee" with a long sound',
+      'Say "U" like in "Umbrella"',
+      'Say "Uu" with a long sound',
+      'Say "Ea" like in "Eagle"',
+      'Say "Eaa" with emphasis',
+      'Say "O" like in "Orange"',
+      'Say "Oo" with a long sound'
+    ];
 
     let currentIndex = 0;
     let mediaRecorder, audioChunks = [];
@@ -47,9 +457,17 @@
     const stopBtn = document.getElementById("stopBtn");
     const nextBtn = document.getElementById("nextBtn");
     const statusDiv = document.getElementById("status");
+    const progressFill = document.getElementById("progressFill");
+    const pronunciationHint = document.getElementById("pronunciationHint");
+    const celebration = document.getElementById("celebration");
 
     function updateCard() {
       symbolDisplay.textContent = hindiSymbols[currentIndex];
+      pronunciationHint.textContent = pronunciationHints[currentIndex];
+      
+      // Update progress bar
+      const progress = ((currentIndex + 1) / hindiSymbols.length) * 100;
+      progressFill.style.width = progress + '%';
     }
 
     async function sendAudio(blob) {
@@ -57,56 +475,130 @@
       formData.append("audio", blob, "recording.wav");
       formData.append("target", englishLabels[currentIndex]);
 
-      statusDiv.textContent = "⏳ Analyzing...";
+      statusDiv.textContent = "⏳ Analyzing your voice...";
+      statusDiv.className = "status analyzing";
 
-      const res = await fetch("/analyze_pronunciation", {
-        method: "POST",
-        body: formData
-      });
+      try {
+        const res = await fetch("/analyze_pronunciation", {
+          method: "POST",
+          body: formData
+        });
 
-      const data = await res.json();
-      if (data.success) {
-        statusDiv.innerHTML = `✅ ${data.feedback.level}: ${data.feedback.overall}`;
-      } else {
-        statusDiv.textContent = "❌ Analysis failed.";
+        const data = await res.json();
+        if (data.success) {
+          statusDiv.innerHTML = `✅ ${data.feedback.level}: ${data.feedback.overall}`;
+          statusDiv.className = "status success";
+          
+          // Add sparkle effect
+          createSparkles();
+        } else {
+          statusDiv.textContent = "❌ Let's try again! Speak a bit louder.";
+          statusDiv.className = "status error";
+        }
+      } catch (error) {
+        statusDiv.textContent = "❌ Connection error. Please try again.";
+        statusDiv.className = "status error";
       }
     }
 
+    function createSparkles() {
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          const sparkle = document.createElement('div');
+          sparkle.innerHTML = '✨';
+          sparkle.style.position = 'absolute';
+          sparkle.style.fontSize = '20px';
+          sparkle.style.pointerEvents = 'none';
+          sparkle.style.left = Math.random() * window.innerWidth + 'px';
+          sparkle.style.top = Math.random() * window.innerHeight + 'px';
+          sparkle.style.animation = 'fadeIn 1s ease-out forwards';
+          sparkle.style.zIndex = '1000';
+          document.body.appendChild(sparkle);
+          
+          setTimeout(() => {
+            sparkle.remove();
+          }, 1000);
+        }, i * 200);
+      }
+    }
+
+    function restartPractice() {
+      currentIndex = 0;
+      celebration.style.display = 'none';
+      updateCard();
+      statusDiv.textContent = "";
+      statusDiv.className = "status";
+    }
+
     recordBtn.onclick = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder = new MediaRecorder(stream);
-      audioChunks = [];
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
 
-      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-        await sendAudio(audioBlob);
-      };
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+          await sendAudio(audioBlob);
+          
+          // Stop all audio tracks
+          stream.getTracks().forEach(track => track.stop());
+        };
 
-      mediaRecorder.start();
-      statusDiv.textContent = "🎙 Recording...";
-      recordBtn.disabled = true;
-      stopBtn.disabled = false;
+        mediaRecorder.start();
+        statusDiv.textContent = "🎙️ Recording... Speak now!";
+        statusDiv.className = "status recording";
+        recordBtn.disabled = true;
+        stopBtn.disabled = false;
+        recordBtn.classList.add('recording');
+        recordBtn.textContent = "🔴 Recording...";
+      } catch (error) {
+        statusDiv.textContent = "❌ Cannot access microphone. Please allow permission.";
+        statusDiv.className = "status error";
+      }
     };
 
     stopBtn.onclick = () => {
-      mediaRecorder.stop();
-      recordBtn.disabled = false;
-      stopBtn.disabled = true;
-      statusDiv.textContent = "📤 Uploading...";
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        recordBtn.disabled = false;
+        stopBtn.disabled = true;
+        recordBtn.classList.remove('recording');
+        recordBtn.textContent = "🎙️ Start Recording";
+        statusDiv.textContent = "📤 Processing your voice...";
+        statusDiv.className = "status analyzing";
+      }
     };
 
     nextBtn.onclick = () => {
       currentIndex++;
       if (currentIndex >= hindiSymbols.length) {
-        statusDiv.textContent = "🎉 Practice complete!";
+        celebration.style.display = 'flex';
+        createSparkles();
         currentIndex = 0;
+        return;
       }
       updateCard();
       statusDiv.textContent = "";
+      statusDiv.className = "status";
     };
 
+    // Initialize
     updateCard();
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && !recordBtn.disabled) {
+        e.preventDefault();
+        recordBtn.click();
+      } else if (e.code === 'Enter' && !stopBtn.disabled) {
+        e.preventDefault();
+        stopBtn.click();
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        nextBtn.click();
+      }
+    });
   </script>
 </body>
 </html>
